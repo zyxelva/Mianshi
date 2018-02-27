@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:tx="http://www.springframework.org/schema/tx" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop-3.2.xsd 
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-3.2.xsd 
+	http://www.springframework.org/schema/jee 
+	http://www.springframework.org/schema/jee/spring-jee-3.2.xsd 
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-3.2.xsd"
+	default-lazy-init="true">
+	<!--######################## 打开Spring的Annotation支持 ######################## -->
+	<context:annotation-config />
+	<!--######################## 设定Spring 去哪些包中找Annotation ######################## -->
+	<context:component-scan base-package="com.*" />
+	
+	<!-- 引入jdbc配置文件 -->    
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">    
+        <property name="locations">    
+            <list>    
+                <value>classpath:jdbc.properties</value>    
+            </list>    
+        </property>    
+    </bean>    
+	<!-- 数据源配置,使用应用内的DBCP数据库连接池 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" 
+		destroy-method="close">
+		<!-- Connection Info -->
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<!-- 配置连接池的初始值 -->
+		<property name="initialSize" value="1" />
+		<property name="minIdle" value="1" />
+		<property name="maxActive" value="50" /><!-- *maxActive:最大连接数据库连接数,设 0 为没有限制  -->
+		<property name="maxIdle" value="20" /><!-- *maxIdle:最大等待连接中的数量,设 0 为没有限制  -->
+		<property name="maxWait" value="1000" /><!-- *maxWait:最大等待毫秒数, 单位为 ms, 超过时间会出错误信息 -->
+	</bean>
+    
+    <!--######################## 创建Spring的SessionFactory工厂 ######################## -->
+	<!-- 和hibernate4整合没有提供专门的针对Annotation的类，直接在LocalSessionFactoryBean中已经集成 -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<!-- 注入数据源 -->
+		<!-- name="dataSource"必须写死，不能改变 LocalSessionFactoryBean类里面就有一个dataSource名称的属性提供给注入-->
+		<property name="dataSource" ref="dataSource" />
+		<!-- 设置Spring取那个包中查找相应的实体类 -->
+		<property name="packagesToScan">
+			<value>com.baobaotao.*</value>
+		</property>
+		<property name="hibernateProperties">
+			<!-- <value> hibernate.dialect=org.hibernate.dialect.HSQLDialect </value> -->
+			<props>
+				<!-- 方言，多数据源可不配置 -->
+				<prop key="hibernate.dialect">org.hibernate.dialect.Oracle9Dialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<!-- 注释掉 hibernate.hbm2ddl.auto，启动可以加快-->
+				<!--prop key="hibernate.hbm2ddl.auto">update</prop-->
+				<prop key="hibernate.format_sql">false</prop>
+			</props>
+		</property>
+	</bean>
+    
+  <!--jdbcTemplate配置  -->
+  <!-- <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+    <property name="dataSource" ref="dataSource" />
+  </bean> -->
+	<!-- <bean id="messageSource" -->
+	<!-- class="org.springframework.context.support.ReloadableResourceBundleMessageSource"> -->
+	<!-- <property name="basenames"> -->
+	<!-- <list> -->
+	<!-- <value>classpath:messages,spring/messages-feelview</value> -->
+	<!-- </list> -->
+	<!-- </property> -->
+	<!-- <property name="cacheSeconds" -->
+	<!-- value="${cacheSeconds}"/> -->
+	<!-- </bean> -->
+	
+	<!--######################## 配置Spring的事务处理 ######################## -->
+	<bean id="transactionManager" 
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager" >
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>	
+
+	<!-- 切入点 -->
+	<aop:config proxy-target-class="true">
+		<aop:pointcut expression=" execution(* com.baobaotao.service..*(..))" id="serviceMethod"/>
+		<aop:advisor pointcut-ref="serviceMethod" advice-ref="txAdvice"/>		
+	</aop:config>
+	<tx:advice  id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="*"/>
+		</tx:attributes>
+	</tx:advice>
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+	<bean id="pager" class="com.baobaotao.base.entity.Pager" scope="prototype"></bean>
+</beans>
