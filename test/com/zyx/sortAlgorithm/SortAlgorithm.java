@@ -3,6 +3,8 @@
  */
 package com.zyx.sortAlgorithm;
 
+import java.util.ArrayList;
+
 /**
  * @author zyxelva
  *
@@ -71,17 +73,7 @@ public class SortAlgorithm {
         for (int i = 1; i < a.length; i++) {
             int j = i - 1;
             temp = a[i];
-            // while (j>=0)
-            // {
-            // if(temp < a[j]){
-            // a[j + 1] = a[j];
-            // j--;
-            // }
-            // else
-            // {
-            // break;
-            // }
-            // }
+
             while (j >= 0 && temp < a[j]) {
                 a[j + 1] = a[j];
                 j--;
@@ -94,15 +86,17 @@ public class SortAlgorithm {
     }
 
     public void shellSort(int[] a) {
-        if (null == a || a.length <= 1)
-            return;
+        if (null == a || a.length <= 1) {
+			return;
+		}
         int len = a.length;
         int temp = 0;
         int i;
         int j;
         int dk = 0;
-        while (dk < len)
-            dk = 3 * dk + 1;
+        while (dk < len) {
+			dk = 3 * dk + 1;
+		}
 
         while (dk > 0) {
             for (i = dk; i < len; i++) {
@@ -118,7 +112,6 @@ public class SortAlgorithm {
     }
 
     public void halfSort() {
-        System.out.println("浜屽垎鎻掑叆鎺掑簭锛�");
         int[] a = list;
         int temp;
 
@@ -149,7 +142,7 @@ public class SortAlgorithm {
     public void quickSort() {
         int[] a = list;
         int lengh = a.length - 1;
-        System.out.println("蹇帓锛�");
+        System.out.println("Quick Sort Begin......");
         quickSort(a, 0, lengh);
         printList(a);
     }
@@ -197,7 +190,6 @@ public class SortAlgorithm {
             a[j] = temp;
 
             heapAdjust(a, 0, j - 1);
-            System.out.println("绗�" + (length - j) + "娆℃帓搴�");
             printList(a);
         }
     }
@@ -206,7 +198,6 @@ public class SortAlgorithm {
         for (int i = (len - 1) / 2; i >= 0; i--) {
             heapAdjust(b, i, len);
         }
-        System.out.println("鍒濆鍖栧爢鍚庯紝搴忓垪锛�");
         printList(b);
     }
 
@@ -240,7 +231,7 @@ public class SortAlgorithm {
 
     public void MSort(int[] b, int start, int end) {
         if (start < end) {
-            int mid = start + (end - start) / 2;// 闃叉鏍堟孩鍑�
+            int mid = start + (end - start) / 2;
             MSort(b, start, mid);
             MSort(b, mid + 1, end);
             MergeList(b, start, mid, end);
@@ -289,6 +280,8 @@ public class SortAlgorithm {
         // new SortAlgorithm().bubbleSort();
         sa.shellSort(list);
         sa.printList(sa.list);
+
+        new ArrayList();
     }
 
 }
